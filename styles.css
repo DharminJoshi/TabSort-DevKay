@@ -1,0 +1,40 @@
+body {
+    font-family: Arial, sans-serif;
+    width: 250px;
+    padding: 10px;
+    margin: 0;
+  }
+  
+  h1 {
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+  
+  #tabsList {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+  }
+  
+  .tab-item {
+    display: flex;
+    justify-content: space-between;
+    margin: 5px 0;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
+  button {
+    background-color: #008CBA;
+    color: white;
+    border: none;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 3px;
+  }
+  
+  button:hover {
+    background-color: #007B9E;
+  }
+  
