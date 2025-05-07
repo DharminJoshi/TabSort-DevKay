@@ -1,17 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>TabSort</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <h1>TabSort</h1>
-  <div id="tabsList">
-    <!-- List of open tabs will appear here -->
-  </div>
+
+  <!-- Group Name Input -->
+  <input id="groupNameInput" type="text" placeholder="Enter group name" />
+
+  <!-- Group Selected Tabs Button -->
+  <button id="groupSelectedTabs">Group Selected Tabs</button>
+
+  <!-- Open Tabs List -->
+  <h2>Open Tabs</h2>
+  <div id="tabsList"></div>
+
+  <!-- Close Inactive Tabs -->
   <button id="closeInactiveTabs">Close Inactive Tabs</button>
+
+  <!-- Existing Groups List -->
+  <h2>Manage Groups</h2>
+  <div id="groupsList"></div>
+
+  <!-- Script -->
   <script src="popup.js"></script>
 </body>
 </html>

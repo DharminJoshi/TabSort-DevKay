@@ -1,40 +1,141 @@
+/* General body styles */
 body {
-    font-family: Arial, sans-serif;
-    width: 250px;
-    padding: 10px;
-    margin: 0;
-  }
-  
-  h1 {
-    font-size: 16px;
-    margin-bottom: 10px;
-  }
-  
-  #tabsList {
-    max-height: 200px;
-    overflow-y: auto;
-    margin-bottom: 10px;
-  }
-  
-  .tab-item {
-    display: flex;
-    justify-content: space-between;
-    margin: 5px 0;
-    padding: 5px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-  }
-  
-  button {
-    background-color: #008CBA;
-    color: white;
-    border: none;
-    cursor: pointer;
-    padding: 5px 10px;
-    border-radius: 3px;
-  }
-  
-  button:hover {
-    background-color: #007B9E;
-  }
-  
+  font-family: Arial, sans-serif;
+  width: 300px;
+  padding: 10px;
+  margin: 0;
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+h1 {
+  font-size: 18px;
+  margin-bottom: 15px;
+  text-align: center;
+  color: #2c3e50;
+}
+
+/* Input and button styles */
+input[type="text"] {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+button {
+  background-color: #008CBA;
+  color: white;
+  border: none;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+button:hover {
+  background-color: #007B9E;
+}
+
+/* Button for grouping tabs */
+button#groupSelectedTabs {
+  background-color: #2ecc71;
+}
+
+button#groupSelectedTabs:hover {
+  background-color: #27ae60;
+}
+
+button#closeInactiveTabs {
+  background-color: #e74c3c;
+}
+
+button#closeInactiveTabs:hover {
+  background-color: #c0392b;
+}
+
+/* Tabs list and group list styles */
+#tabsList, #groupsList {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+  padding: 0;
+}
+
+.tab-item, .group-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 5px 0;
+  padding: 8px;
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.tab-item button, .group-item button {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 12px;
+  margin-left: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.tab-item button:hover, .group-item button:hover {
+  background-color: #2980b9;
+}
+
+.group-item {
+  flex-direction: column;
+}
+
+.group-item div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Styling for group management buttons */
+button.rename-button {
+  background-color: #f39c12;
+}
+
+button.rename-button:hover {
+  background-color: #e67e22;
+}
+
+button.delete-button {
+  background-color: #e74c3c;
+}
+
+button.delete-button:hover {
+  background-color: #c0392b;
+}
+
+/* Custom scrollbars for lists */
+#tabsList::-webkit-scrollbar, #groupsList::-webkit-scrollbar {
+  width: 8px;
+}
+
+#tabsList::-webkit-scrollbar-thumb, #groupsList::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 5px;
+}
+
+#tabsList::-webkit-scrollbar-thumb:hover, #groupsList::-webkit-scrollbar-thumb:hover {
+  background-color: #888;
+}
+
+#tabsList::-webkit-scrollbar-track, #groupsList::-webkit-scrollbar-track {
+  background-color: #f1f1f1;
+}
