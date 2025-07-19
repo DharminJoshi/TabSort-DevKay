@@ -1,13 +1,14 @@
 /* General body styles */
 body {
   font-family: Arial, sans-serif;
-  width: 300px;
-  padding: 10px;
+  width: 320px;
+  padding: 15px;
   margin: 0;
   background-color: #f5f5f5;
   color: #333;
 }
 
+/* Headings */
 h1 {
   font-size: 18px;
   margin-bottom: 15px;
@@ -15,97 +16,132 @@ h1 {
   color: #2c3e50;
 }
 
+h2 {
+  margin-top: 20px;
+  font-size: 16px;
+  color: #34495e;
+}
+
 /* Input and button styles */
-input[type="text"] {
+input[type="text"],
+input[type="number"],
+textarea {
   width: 100%;
   padding: 8px;
+  margin-top: 8px;
   margin-bottom: 10px;
   border: 1px solid #ddd;
   border-radius: 5px;
   font-size: 14px;
+  box-sizing: border-box;
+}
+
+textarea {
+  height: 80px;
+  resize: vertical;
 }
 
 button {
-  background-color: #008CBA;
-  color: white;
-  border: none;
-  cursor: pointer;
+  width: 100%;
   padding: 8px 12px;
+  margin-bottom: 10px;
+  border: none;
   border-radius: 5px;
   font-size: 14px;
+  cursor: pointer;
   transition: background-color 0.3s ease;
-  width: 100%;
-  margin-bottom: 10px;
+  color: #fff;
 }
 
-button:hover {
-  background-color: #007B9E;
-}
-
-/* Button for grouping tabs */
-button#groupSelectedTabs {
+/* Action buttons */
+#groupSelectedTabs {
   background-color: #2ecc71;
 }
 
-button#groupSelectedTabs:hover {
+#groupSelectedTabs:hover {
   background-color: #27ae60;
 }
 
-button#closeInactiveTabs {
+#closeInactiveTabs {
   background-color: #e74c3c;
 }
 
-button#closeInactiveTabs:hover {
+#closeInactiveTabs:hover {
   background-color: #c0392b;
 }
 
-/* Tabs list and group list styles */
-#tabsList, #groupsList {
-  max-height: 200px;
-  overflow-y: auto;
-  margin-bottom: 10px;
-  padding: 0;
+#saveWhitelist {
+  background-color: #3498db;
 }
 
-.tab-item, .group-item {
+#saveWhitelist:hover {
+  background-color: #2980b9;
+}
+
+#saveTimeout {
+  background-color: #9b59b6;
+}
+
+#saveTimeout:hover {
+  background-color: #8e44ad;
+}
+
+/* List containers */
+#tabsList,
+#groupsList {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+}
+
+/* Items inside lists */
+.tab-item,
+.group-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin: 5px 0;
   padding: 8px;
-  background-color: #ffffff;
+  background-color: #fff;
   border: 1px solid #ddd;
   border-radius: 5px;
   font-size: 14px;
-}
-
-.tab-item button, .group-item button {
-  background-color: #3498db;
-  color: white;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 12px;
-  margin-left: 5px;
-  transition: background-color 0.3s ease;
-}
-
-.tab-item button:hover, .group-item button:hover {
-  background-color: #2980b9;
 }
 
 .group-item {
   flex-direction: column;
 }
 
-.group-item div {
+.group-item > div {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  width: 100%;
 }
 
-/* Styling for group management buttons */
+/* Buttons inside list items */
+.tab-item button,
+.group-item button {
+  background-color: #3498db;
+  color: white;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  font-size: 12px;
+  margin-left: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.tab-item button:hover,
+.group-item button:hover {
+  background-color: #2980b9;
+}
+
 button.rename-button {
   background-color: #f39c12;
 }
@@ -122,20 +158,24 @@ button.delete-button:hover {
   background-color: #c0392b;
 }
 
-/* Custom scrollbars for lists */
-#tabsList::-webkit-scrollbar, #groupsList::-webkit-scrollbar {
+/* Custom scrollbars */
+#tabsList::-webkit-scrollbar,
+#groupsList::-webkit-scrollbar {
   width: 8px;
 }
 
-#tabsList::-webkit-scrollbar-thumb, #groupsList::-webkit-scrollbar-thumb {
+#tabsList::-webkit-scrollbar-thumb,
+#groupsList::-webkit-scrollbar-thumb {
   background-color: #ccc;
   border-radius: 5px;
 }
 
-#tabsList::-webkit-scrollbar-thumb:hover, #groupsList::-webkit-scrollbar-thumb:hover {
+#tabsList::-webkit-scrollbar-thumb:hover,
+#groupsList::-webkit-scrollbar-thumb:hover {
   background-color: #888;
 }
 
-#tabsList::-webkit-scrollbar-track, #groupsList::-webkit-scrollbar-track {
+#tabsList::-webkit-scrollbar-track,
+#groupsList::-webkit-scrollbar-track {
   background-color: #f1f1f1;
 }

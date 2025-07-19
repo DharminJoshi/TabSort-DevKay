@@ -1,58 +1,147 @@
 let inactiveTabs = {};
 let groupMapping = {};
+let whitelist = [];
+let inactivityTimeoutMinutes = 10; // Default 10 minutes
 
-// Save group mapping to local storage
+// --- STORAGE HELPERS ---
+
 function saveGroupMapping() {
   chrome.storage.local.set({ groupMapping });
 }
 
-// Load group mapping from storage if not already loaded
-function loadGroupMapping(callback) {
-  if (Object.keys(groupMapping).length === 0) {
-    chrome.storage.local.get('groupMapping', (data) => {
-      groupMapping = data.groupMapping || {};
-      callback();
-    });
-  } else {
-    callback();
-  }
+function loadGroupMapping() {
+  return new Promise((resolve) => {
+    if (Object.keys(groupMapping).length === 0) {
+      chrome.storage.local.get('groupMapping', (data) => {
+        groupMapping = data.groupMapping || {};
+        resolve();
+      });
+    } else {
+      resolve();
+    }
+  });
 }
 
-// Automatically close tabs inactive for more than 10 minutes
-function checkInactiveTabs() {
+function saveInactiveTabs() {
+  chrome.storage.local.set({ inactiveTabs });
+}
+
+function loadInactiveTabs() {
+  return new Promise((resolve) => {
+    chrome.storage.local.get('inactiveTabs', (data) => {
+      inactiveTabs = data.inactiveTabs || {};
+      resolve();
+    });
+  });
+}
+
+function loadWhitelist() {
+  return new Promise((resolve) => {
+    chrome.storage.local.get('whitelist', (data) => {
+      whitelist = data.whitelist || [];
+      resolve();
+    });
+  });
+}
+
+function loadTimeout() {
+  return new Promise((resolve) => {
+    chrome.storage.local.get('inactivityTimeoutMinutes', (data) => {
+      inactivityTimeoutMinutes = data.inactivityTimeoutMinutes || 10;
+      resolve();
+    });
+  });
+}
+
+// --- UTILS ---
+
+function pickColorForGroup(name) {
+  const colors = ['blue', 'green', 'red', 'yellow', 'purple', 'pink', 'cyan', 'orange'];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash += name.charCodeAt(i);
+  }
+  return colors[hash % colors.length];
+}
+
+function isWhitelisted(tabUrl) {
+  if (!tabUrl) return false;
+  return whitelist.some(domain => tabUrl.includes(domain));
+}
+
+// --- INACTIVE TABS MANAGEMENT ---
+
+// Check and close tabs inactive longer than timeout, skipping whitelisted
+async function checkInactiveTabs() {
   const now = Date.now();
-  for (const tabId in inactiveTabs) {
-    if (now - inactiveTabs[tabId] > 10 * 60 * 1000) {
-      chrome.tabs.remove(Number(tabId));
-      delete inactiveTabs[tabId];
+
+  for (const tabIdStr of Object.keys(inactiveTabs)) {
+    const tabId = Number(tabIdStr);
+    try {
+      const tab = await chrome.tabs.get(tabId);
+      if (!tab) {
+        // Tab might be already closed
+        delete inactiveTabs[tabIdStr];
+        continue;
+      }
+
+      if (isWhitelisted(tab.url)) {
+        // Skip whitelisted tabs
+        continue;
+      }
+
+      if (now - inactiveTabs[tabIdStr] > inactivityTimeoutMinutes * 60 * 1000) {
+        await chrome.tabs.remove(tabId);
+        delete inactiveTabs[tabIdStr];
+      }
+    } catch (e) {
+      // Tab might not exist or other errors
+      delete inactiveTabs[tabIdStr];
     }
   }
+
+  saveInactiveTabs();
 }
 
-// Track active tabs
+// --- EVENT LISTENERS ---
+
 chrome.tabs.onActivated.addListener(activeInfo => {
   inactiveTabs[activeInfo.tabId] = Date.now();
+  saveInactiveTabs();
 });
 
-// Track updated tabs as active once they finish loading
 chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
   if (changeInfo.status === 'complete') {
     inactiveTabs[tabId] = Date.now();
+    saveInactiveTabs();
   }
 });
 
-// Periodically check for inactive tabs (every 60 seconds)
+// --- INITIALIZE STORAGE DATA ---
+
+async function init() {
+  await Promise.all([
+    loadGroupMapping(),
+    loadInactiveTabs(),
+    loadWhitelist(),
+    loadTimeout()
+  ]);
+}
+
+init();
+
+// Check inactive tabs every minute
 setInterval(checkInactiveTabs, 60 * 1000);
 
-// Handle messages from popup or content scripts
+// --- MESSAGE HANDLER ---
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   const { action } = message;
 
   if (action === 'groupTab' || action === 'groupMultipleTabs') {
-    loadGroupMapping(() => {
+    loadGroupMapping().then(() => {
       if (action === 'groupTab') {
         const { tabId, groupName } = message;
-
         if (!groupName || typeof groupName !== 'string') {
           sendResponse({ status: 'error', message: 'Invalid group name' });
           return;
@@ -60,7 +149,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
         if (groupMapping[groupName]) {
           chrome.tabs.group({ groupId: groupMapping[groupName], tabIds: [tabId] }, () => {
-            sendResponse({ status: 'grouped', groupName });
+            if (chrome.runtime.lastError) {
+              sendResponse({ status: 'error', message: chrome.runtime.lastError.message });
+            } else {
+              sendResponse({ status: 'grouped', groupName });
+            }
           });
         } else {
           chrome.tabs.group({ tabIds: [tabId] }, (groupId) => {
@@ -69,7 +162,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
               sendResponse({ status: 'error', message: 'Group creation failed' });
               return;
             }
-
             chrome.tabGroups.update(groupId, {
               title: groupName,
               color: pickColorForGroup(groupName)
@@ -84,7 +176,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
       if (action === 'groupMultipleTabs') {
         const { tabIds, groupName } = message;
-
         if (!Array.isArray(tabIds) || tabIds.length === 0 || !groupName) {
           sendResponse({ status: 'error', message: 'Invalid input' });
           return;
@@ -92,7 +183,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
         chrome.tabs.query({}, allTabs => {
           const validTabIds = allTabs.map(tab => tab.id).filter(id => tabIds.includes(id));
-
           if (validTabIds.length === 0) {
             sendResponse({ status: 'error', message: 'No valid tabs found' });
             return;
@@ -100,7 +190,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
           if (groupMapping[groupName]) {
             chrome.tabs.group({ groupId: groupMapping[groupName], tabIds: validTabIds }, () => {
-              sendResponse({ status: 'success', groupedInto: groupName });
+              if (chrome.runtime.lastError) {
+                sendResponse({ status: 'error', message: chrome.runtime.lastError.message });
+              } else {
+                sendResponse({ status: 'success', groupedInto: groupName });
+              }
             });
           } else {
             chrome.tabs.group({ tabIds: validTabIds }, (groupId) => {
@@ -109,7 +203,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 sendResponse({ status: 'error', message: 'Failed to create new group' });
                 return;
               }
-
               chrome.tabGroups.update(groupId, {
                 title: groupName,
                 color: pickColorForGroup(groupName)
@@ -127,21 +220,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true; // Async response
   }
 
-  // Handle manual inactive tab closing
   if (action === 'closeInactiveTabs') {
-    checkInactiveTabs();
-    sendResponse({ status: 'done', message: 'Checked and closed inactive tabs.' });
+    checkInactiveTabs().then(() => {
+      sendResponse({ status: 'done', message: 'Checked and closed inactive tabs.' });
+    });
+    return true;
   }
 
-  // Return all group mappings
   if (action === 'getGroups') {
-    loadGroupMapping(() => {
+    loadGroupMapping().then(() => {
       sendResponse({ groupMapping });
     });
     return true;
   }
 
-  // Handle renaming group
   if (action === 'renameGroup') {
     const { oldGroupName, newGroupName } = message;
 
@@ -152,9 +244,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     const groupId = groupMapping[oldGroupName];
 
-    // Update group title
     chrome.tabGroups.update(groupId, { title: newGroupName }, () => {
-      // Remove old group mapping and add the new one
       delete groupMapping[oldGroupName];
       groupMapping[newGroupName] = groupId;
       saveGroupMapping();
@@ -164,7 +254,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
-  // Handle deleting group
   if (action === 'deleteGroup') {
     const { groupName } = message;
 
@@ -175,7 +264,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     const groupId = groupMapping[groupName];
 
-    // Remove the group
     chrome.tabGroups.remove(groupId, () => {
       delete groupMapping[groupName];
       saveGroupMapping();
@@ -184,14 +272,38 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     return true;
   }
-});
 
-// Pick a color for a group name deterministically
-function pickColorForGroup(name) {
-  const colors = ['blue', 'green', 'red', 'yellow', 'purple', 'pink', 'cyan', 'orange'];
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash += name.charCodeAt(i);
+  if (action === 'getWhitelist') {
+    sendResponse({ whitelist });
+    return true;
   }
-  return colors[hash % colors.length];
-}
+
+  if (action === 'updateWhitelist') {
+    const { newWhitelist } = message;
+    if (!Array.isArray(newWhitelist)) {
+      sendResponse({ status: 'error', message: 'Invalid whitelist format' });
+      return;
+    }
+    whitelist = newWhitelist;
+    chrome.storage.local.set({ whitelist });
+    sendResponse({ status: 'success', whitelist });
+    return true;
+  }
+
+  if (action === 'getTimeout') {
+    sendResponse({ inactivityTimeoutMinutes });
+    return true;
+  }
+
+  if (action === 'setTimeout') {
+    const { newTimeout } = message;
+    if (typeof newTimeout !== 'number' || newTimeout <= 0) {
+      sendResponse({ status: 'error', message: 'Invalid timeout value' });
+      return;
+    }
+    inactivityTimeoutMinutes = newTimeout;
+    chrome.storage.local.set({ inactivityTimeoutMinutes: newTimeout });
+    sendResponse({ status: 'success', inactivityTimeoutMinutes });
+    return true;
+  }
+});

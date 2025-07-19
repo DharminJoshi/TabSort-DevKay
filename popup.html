@@ -10,6 +10,7 @@
   <h1>TabSort</h1>
 
   <!-- Group Name Input -->
+  <label for="groupNameInput">Group Name:</label>
   <input id="groupNameInput" type="text" placeholder="Enter group name" />
 
   <!-- Group Selected Tabs Button -->
@@ -25,6 +26,16 @@
   <!-- Existing Groups List -->
   <h2>Manage Groups</h2>
   <div id="groupsList"></div>
+
+  <!-- Whitelist Settings -->
+  <h2>Whitelist Domains</h2>
+  <textarea id="whitelistInput" placeholder="Enter one domain per line"></textarea>
+  <button id="saveWhitelist">Save Whitelist</button>
+
+  <!-- Inactivity Timeout -->
+  <h2>Inactivity Timeout</h2>
+  <input type="number" id="timeoutInput" min="1" placeholder="Timeout (mins)" />
+  <button id="saveTimeout">Save Timeout</button>
 
   <!-- Script -->
   <script src="popup.js"></script>
