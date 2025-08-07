@@ -5,6 +5,7 @@
   "description": "Organize and manage your browser tabs efficiently.",
   "permissions": [
     "tabs",
+    "tabGroups",
     "storage",
     "activeTab",
     "scripting"
