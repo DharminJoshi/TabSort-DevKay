@@ -254,24 +254,47 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
-  if (action === 'deleteGroup') {
-    const { groupName } = message;
+ if (action === 'deleteGroup') {
+  const { groupName } = message;
 
-    if (!groupMapping[groupName]) {
-      sendResponse({ status: 'error', message: 'Group not found' });
+  if (!groupMapping[groupName]) {
+    sendResponse({ status: 'error', message: 'Group not found' });
+    return;
+  }
+
+  const groupId = groupMapping[groupName];
+
+
+  chrome.tabs.query({ groupId }, (tabs) => {
+    if (chrome.runtime.lastError) {
+      sendResponse({ status: 'error', message: chrome.runtime.lastError.message });
       return;
     }
 
-    const groupId = groupMapping[groupName];
+    if (!tabs.length) {
+      delete groupMapping[groupName];
+      saveGroupMapping();
+      sendResponse({ status: 'deleted', deletedGroup: groupName });
+      return;
+    }
 
-    chrome.tabGroups.remove(groupId, () => {
+    const tabIds = tabs.map(tab => tab.id);
+
+    chrome.tabs.ungroup(tabIds, () => {
+      if (chrome.runtime.lastError) {
+        sendResponse({ status: 'error', message: chrome.runtime.lastError.message });
+        return;
+      }
+
       delete groupMapping[groupName];
       saveGroupMapping();
       sendResponse({ status: 'deleted', deletedGroup: groupName });
     });
+  });
 
-    return true;
-  }
+  return true;
+}
+
 
   if (action === 'getWhitelist') {
     sendResponse({ whitelist });
