@@ -1,4 +1,4 @@
-# TabSort-DevKay (Under Development)
+# TabSort-DevKay
 
 **TabSort-DevKay** is an innovative Chrome extension designed to streamline your browser experience by helping you efficiently organize, manage, and group your tabs. Whether you're working on multiple projects or just want to tidy up your browser, **TabSort-DevKay** provides powerful tools to keep your tabs under control.
 
